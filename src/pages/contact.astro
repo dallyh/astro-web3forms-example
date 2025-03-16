@@ -1,8 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-
-// Should probably use env vars for this!
-const WEB3_FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
+import { CONTACT_FORM_ACCESS_KEY } from "astro:env/client";
 ---
 
 <Layout>
@@ -14,7 +12,7 @@ const WEB3_FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
             </div>
 
             <form id="form" class="needs-validation min-w-md" novalidate>
-                <input type="hidden" name="access_key" value={WEB3_FORMS_ACCESS_KEY} />
+                <input type="hidden" name="access_key" value={CONTACT_FORM_ACCESS_KEY} />
                 <input type="checkbox" class="hidden" style="display:none" name="botcheck" />
 
                 <div class="mb-5">
@@ -49,29 +47,29 @@ const WEB3_FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
                     ></textarea>
                     <div class="empty-feedback invalid-feedback text-red-400 text-sm mt-1">Please enter your message.</div>
                 </div>
-				<!-- hCaptcha container -->
+                <!-- hCaptcha container -->
                 <div id="hcaptcha"></div>
                 <button class="outline-1 p-2 mt-4 cursor-pointer" type="submit">Send Message</button>
                 <div id="result" class="mt-3 text-center"></div>
             </form>
         </div>
     </contact-form>
-    <script
-        is:inline
-        data-astro-rerun
-        src="https://js.hcaptcha.com/1/api.js?hl=en&onload=captchaInit&render=explicit"
-        defer></script>
     <script is:inline>
-		///<reference types="@hcaptcha/types"/>
-
+        ///<reference types="@hcaptcha/types"/>
         window.captchaInit = function captchaInit() {
             if (window.hcaptcha) {
-				// The site key is public
-				// https://docs.web3forms.com/getting-started/customizations/spam-protection/hcaptcha#manual-setup
+                // The site key is public
+                // https://docs.web3forms.com/getting-started/customizations/spam-protection/hcaptcha#manual-setup
+                // Make sure you are using 50b2fe65-b00b-4b9e-ad62-3ba471098be2 as the sitekey for free plans. Also make sure reCaptchaCompat is false.
                 hcaptcha.render("hcaptcha", { sitekey: "50b2fe65-b00b-4b9e-ad62-3ba471098be2" });
             }
         };
     </script>
+    <script
+        is:inline
+        data-astro-rerun
+        src="https://js.hcaptcha.com/1/api.js?hl=en&onload=captchaInit&render=explicit&recaptchacompat=off"
+        defer></script>
 </Layout>
 
 <style>
@@ -97,10 +95,10 @@ const WEB3_FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
 <script>
     class ContactForm extends HTMLElement {
         connectedCallback() {
-            this.InitForm();
+            this.initForm();
         }
 
-        InitForm() {
+        initForm() {
             const form = this.querySelector<HTMLFormElement>("#form")!;
             const result = this.querySelector<HTMLDivElement>("#result")!;
 
@@ -145,9 +143,11 @@ const WEB3_FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
                     })
                     .catch((error) => {
                         console.log(error);
+                        hcaptcha.reset();
                         result.innerHTML = "Something went wrong!";
                     })
                     .then(function () {
+                        hcaptcha.reset();
                         form.reset();
                         form.classList.remove("was-validated");
                         setTimeout(() => {
